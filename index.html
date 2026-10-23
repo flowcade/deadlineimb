@@ -152,6 +152,26 @@ h2 .count{background:var(--soft);color:var(--mute);border-radius:99px;padding:1p
 .msg{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
 .walist{display:flex;flex-direction:column;gap:8px}
 
+/* tutorial */
+.ob-k{font-size:12px;color:var(--brand);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ob-txt{color:var(--mute);font-size:14px;margin:0 0 14px}
+.ob-txt b{color:var(--ink)}
+.ob-vis{background:var(--soft);border-radius:12px;padding:14px;margin-bottom:6px}
+.ob-row{display:flex;gap:10px;align-items:center;padding:5px 0;font-size:13px}
+.ob-row .grow{flex:1;min-width:0}
+.ob-row small{display:block;color:var(--mute);font-size:12px}
+.ob-c{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--s-soft);color:var(--s);border:2px solid var(--s);flex:none}
+.ob-c.ev{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.ob-mock{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.ob-sel{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--card);font-weight:600}
+.ob-arrow{text-align:center;color:var(--mute);font-size:18px;line-height:1;margin:6px 0}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin:16px 0 2px}
+.ob-dots i{width:7px;height:7px;border-radius:99px;background:var(--line);transition:width .2s}
+.ob-dots i.on{background:var(--brand);width:20px}
+.ob-check{list-style:none;padding:0;margin:0;font-size:14px}
+.ob-check li{display:flex;gap:10px;align-items:center;padding:6px 0}
+.ob-check li span{width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 .loading{color:var(--mute);padding:30px;text-align:center}
@@ -181,6 +201,7 @@ h2 .count{background:var(--soft);color:var(--mute);border-radius:99px;padding:1p
     <label class="who">Você é
       <select id="who"></select>
     </label>
+    <button class="btn ghost sm" id="btnHelp">? Como funciona</button>
     <button class="btn primary" id="btnNew">+ Novo curso</button>
   </div>
 </header>
@@ -711,10 +732,99 @@ function switchTab(name){
 }
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
 
+/* ===== tutorial ===== */
+function onboardSlides(){
+  // Exemplo com a regra real: curso em 30/11.
+  const ev = new Date(2026, 10, 30);
+  const tl = ETAPAS.map((et, i) => `<div class="ob-row s-open"><div class="ob-c">${i+1}</div>
+      <div class="grow"><b>${esc(et.nome)}</b><small>${esc(et.area)}</small></div>
+      <div style="text-align:right"><b>até ${fd(addD(ev,-et.fim))}</b><small>${et.ini} a ${et.fim} dias antes</small></div></div>`).join('') +
+    `<div class="ob-row"><div class="ob-c ev">★</div><div class="grow"><b>Curso</b></div><b>${fd(ev)}</b></div>`;
+  return [
+    { k:'Como funciona', t:'Prazos sem correria',
+      p:'Você coloca a <b>data do curso</b>. O sistema calcula de trás pra frente até quando cada área tem que entregar, e cada um <b>dá check</b> pra liberar a próxima etapa.',
+      v:`<div class="ob-vis">${tl}</div><p class="hint" style="margin-top:6px">Exemplo: curso em 30/11.</p>` },
+    { k:'Passo 1', t:'Escolha o seu nome',
+      p:'No topo da tela, em <b>“Você é”</b>, escolha o seu nome. Fica salvo nesse aparelho, e o sistema mostra <b>só as tarefas da sua área</b>.',
+      v:`<div class="ob-vis"><div class="ob-mock" style="text-align:center">Você é <span class="ob-sel">Leo ▾</span></div>
+        <div class="ob-arrow">↓</div>
+        <div class="ob-mock"><b>Suas tarefas (Revisão)</b><div class="ob-row s-warn"><div class="ob-c">2</div><div class="grow">Revisão do Leo<small>Curso Toxina · prazo sáb, 24/10</small></div><span class="pill s-warn">Vence amanhã</span></div></div></div>` },
+    { k:'Passo 2', t:'Terminou? Dá o check',
+      p:'Clique em <b>✓ Dar check</b> na sua etapa. O Marketing <b>cola o link dos materiais</b> (Drive, Canva…), que fica clicável pra todo mundo ver. A próxima etapa só libera depois do check.',
+      v:`<div class="ob-vis"><div class="ob-mock">
+          <div style="font-weight:700;margin-bottom:8px">✓ Entrega do material</div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:4px">Link dos materiais *</div>
+          <div class="ob-sel" style="width:100%;font-weight:400;color:var(--mute)">https://drive.google.com/…</div>
+          <div style="text-align:right;margin-top:10px"><span class="btn primary sm">Confirmar check</span></div></div></div>` },
+    { k:'Passo 3', t:'A revisão do Leo',
+      p:'O Leo abre o link e escolhe uma das duas opções:',
+      v:`<div class="ob-vis"><div class="opts">
+          <div class="opt"><div><b>✅ Aprovado, pode subir</b><span>Pula a etapa de alterações e vai direto pro Tráfego.</span></div></div>
+          <div class="opt"><div><b>✏️ Precisa de alterações</b><span>Escreve o que mudar e volta pro Marketing corrigir (até 35 dias antes).</span></div></div>
+        </div></div>` },
+    { k:'Passo 4', t:'Fique de olho nas cores',
+      p:'Cada etapa mostra uma cor. Bateu o olho, sabe o que está em dia e o que está pegando fogo.',
+      v:`<div class="ob-vis">
+          <div class="ob-row"><span class="pill s-ok">Feito</span><span class="grow">Etapa concluída</span></div>
+          <div class="ob-row"><span class="pill s-open">No prazo</span><span class="grow">Liberada, ainda tem tempo</span></div>
+          <div class="ob-row"><span class="pill s-warn">Vence amanhã</span><span class="grow">Faltam 2 dias ou menos</span></div>
+          <div class="ob-row"><span class="pill s-late">Atrasado 2 dias</span><span class="grow">Passou do prazo</span></div>
+          <div class="ob-row"><span class="pill s-lock">Aguardando</span><span class="grow">Esperando a etapa anterior</span></div></div>` },
+    { k:'Passo 5', t:'Avise no WhatsApp',
+      p:'Depois do check, aparece a <b>mensagem pronta</b> pro próximo responsável. É só clicar e enviar. Se alguém atrasar, use o botão <b>Cobrar no WhatsApp</b>.',
+      v:`<div class="ob-vis"><div class="msg" style="background:var(--card);margin-bottom:10px">✅ *Curso Toxina*: entrega do material concluída por Ana.
+Materiais: drive.google.com/…
+
+👉 Próxima etapa: *Revisão do Leo*. Prazo: *sáb, 24/10*.</div>
+        <span class="btn wa" style="width:100%;justify-content:center">Enviar para Leo</span></div>` },
+    { k:'Tudo pronto', t:'Pra começar',
+      p:'Três coisas e o sistema está rodando:',
+      v:`<div class="ob-vis"><ul class="ob-check">
+          <li><span>1</span><div>Cadastre a equipe na aba <b>Equipe</b> (nome, área e WhatsApp)</div></li>
+          <li><span>2</span><div>Clique em <b>+ Novo curso</b> e coloque a data</div></li>
+          <li><span>3</span><div>Mande o link pra equipe e peça pra cada um escolher o nome</div></li>
+        </ul></div><p class="hint">Pra ver este tutorial de novo: botão <b>? Como funciona</b> no topo.</p>`,
+      last:true },
+  ];
+}
+
+function onboard(i){
+  i = i || 0;
+  store('prazos-imb-onboard', '1');
+  const S = onboardSlides(), s = S[i];
+  openModal(`
+    <div class="ob-k">${esc(s.k)} · ${i+1}/${S.length}</div>
+    <h3 style="margin-bottom:8px">${esc(s.t)}</h3>
+    <p class="ob-txt">${s.p}</p>
+    ${s.v}
+    <div class="ob-dots">${S.map((_,j) => `<i class="${j===i?'on':''}"></i>`).join('')}</div>
+    <div class="mact" style="margin-top:12px">
+      ${s.last ? '' : '<button class="btn ghost" data-act="close" style="margin-right:auto">Pular</button>'}
+      ${i > 0 ? `<button class="btn" data-act="ob" data-k="${i-1}">Voltar</button>` : ''}
+      ${s.last
+        ? `<button class="btn" data-act="obTeam">Cadastrar equipe</button><button class="btn primary" data-act="close">Começar</button>`
+        : `<button class="btn primary" data-act="ob" data-k="${i+1}">Próximo</button>`}
+    </div>`);
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  if(b.dataset.act === 'ob') onboard(+b.dataset.k);
+  if(b.dataset.act === 'obTeam'){ closeModal(); switchTab('team'); $('.tabs').scrollIntoView({behavior:'smooth'}); }
+});
+document.addEventListener('keydown', e => {
+  if(!$('#ov').classList.contains('on') || !$('#modal .ob-dots')) return;
+  const nx = $('#modal [data-act=ob]:last-of-type');
+  if(e.key === 'ArrowRight' && nx && nx.textContent === 'Próximo') onboard(+nx.dataset.k);
+  if(e.key === 'ArrowLeft'){ const bk = [...document.querySelectorAll('#modal [data-act=ob]')].find(x => x.textContent === 'Voltar'); if(bk) onboard(+bk.dataset.k); }
+});
+$('#btnHelp').onclick = () => onboard(0);
+
 /* ===== início ===== */
 $('#demo').hidden = !!ENDPOINT;
 switchTab(store('prazos-imb-tab') || 'timeline');
 load();
+if(!store('prazos-imb-onboard')) onboard(0);
 setInterval(() => { if(document.visibilityState === 'visible' && !$('#ov').classList.contains('on') && !teamDraft) load(); }, 60000);
 </script>
 </body>
