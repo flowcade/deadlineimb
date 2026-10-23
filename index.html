@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prazos IMB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F4F2; --card:#FFFFFF; --ink:#1E1A1D; --mute:#6E676C; --line:#E6E1DE; --soft:#F1EDEA;
+  --brand:#7A2E55; --brand-ink:#FFFFFF; --brand-soft:#F4E8EE;
+  --ok:#1F8F4E; --ok-soft:#E3F4EA; --warn:#B87700; --warn-soft:#FFF3D6;
+  --late:#C93A3A; --late-soft:#FBE6E6; --open:#2D63C8; --open-soft:#E6EEFB;
+  --lock:#A39CA0; --lock-soft:#F0EEEE;
+  --shadow:0 1px 2px rgba(30,26,29,.05),0 4px 16px rgba(30,26,29,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#151214; --card:#1F1B1E; --ink:#F2EEF0; --mute:#A79FA4; --line:#332D31; --soft:#282326;
+    --brand:#D27BA6; --brand-ink:#1A1418; --brand-soft:#3A2431;
+    --ok:#4CC27E; --ok-soft:#173326; --warn:#E5A93A; --warn-soft:#3A2E14;
+    --late:#F07070; --late-soft:#3E1D1D; --open:#6E9CF0; --open-soft:#1B2740;
+    --lock:#756D72; --lock-soft:#2A2528; --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 48px}
+
+/* topo */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;font-weight:700;font-size:14px}
+.brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.brand small{display:block;color:var(--mute);font-size:12px}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+.who select{padding:7px 10px;border-radius:9px;border:1px solid var(--line);background:var(--card);min-width:150px}
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--mute)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.wa{background:#1FA855;border-color:#1FA855;color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+a.btn{text-decoration:none;justify-content:center;white-space:normal;text-align:center}
+
+.demo{background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);padding:8px 12px;border-radius:10px;font-size:13px;margin:14px 0 0}
+
+/* pra fazer agora */
+h2{font-size:15px;margin:26px 0 10px;font-weight:700;letter-spacing:-.005em;display:flex;align-items:center;gap:8px}
+h2 .count{background:var(--soft);color:var(--mute);border-radius:99px;padding:1px 8px;font-size:12px;font-weight:600}
+.todo{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.todo-item{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c,var(--open));border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.todo-item .t{font-weight:600}
+.todo-item .m{font-size:13px;color:var(--mute)}
+.todo-item .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.empty{color:var(--mute);font-size:14px;background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center}
+
+/* abas */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:28px;overflow-x:auto;scrollbar-width:none}
+.tab{padding:10px 14px;border:none;background:none;cursor:pointer;color:var(--mute);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.on{color:var(--ink);border-color:var(--brand)}
+.toolbar{display:flex;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap}
+.toolbar .sp{flex:1}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);cursor:pointer}
+
+/* pílulas de status */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--s-soft);color:var(--s)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-ok{--s:var(--ok);--s-soft:var(--ok-soft)}
+.s-skip{--s:var(--ok);--s-soft:var(--ok-soft)}
+.s-warn{--s:var(--warn);--s-soft:var(--warn-soft)}
+.s-late{--s:var(--late);--s-soft:var(--late-soft)}
+.s-open{--s:var(--open);--s-soft:var(--open-soft)}
+.s-lock{--s:var(--lock);--s-soft:var(--lock-soft)}
+
+/* cards de curso */
+.course{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.c-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.c-title{margin-right:auto;min-width:0}
+.c-title h3{margin:0;font-size:16px;font-weight:700}
+.c-title .m{color:var(--mute);font-size:13px;margin-top:2px}
+.c-head .acts{display:flex;gap:6px;align-items:center}
+.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden;width:120px;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:99px}
+
+.track{display:grid;grid-template-columns:repeat(5,1fr);padding:18px 8px 16px;position:relative}
+.step{position:relative;padding:0 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.step::before{content:"";position:absolute;top:15px;left:-50%;right:50%;height:3px;background:var(--line);z-index:0}
+.step:first-child::before{display:none}
+.step.done::before,.step.done-line::before{background:var(--ok)}
+.dot{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;position:relative;z-index:1;background:var(--s-soft);color:var(--s);border:2px solid var(--s)}
+.step.cur .dot{box-shadow:0 0 0 5px color-mix(in srgb,var(--s) 18%,transparent)}
+.dot.ev{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.step .nm{font-weight:600;font-size:14px;margin-top:4px}
+.step .ar{font-size:12px;color:var(--mute)}
+.step .dt{font-size:12px;color:var(--mute)}
+.step .dt b{color:var(--ink);font-weight:600}
+.step .info{font-size:12px;color:var(--mute);line-height:1.35}
+.step .info .obs{display:block;margin-top:2px;font-style:italic;color:var(--ink);opacity:.85;max-width:220px;overflow-wrap:anywhere}
+.step .btns{display:flex;flex-direction:column;gap:5px;margin-top:6px;align-items:center}
+
+/* calendário */
+.cal-head{display:flex;align-items:center;gap:8px}
+.cal-head h3{margin:0 8px;font-size:16px;min-width:150px;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--line);gap:1px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cal .dw{background:var(--soft);font-size:12px;font-weight:600;color:var(--mute);padding:6px 8px;text-align:center}
+.cal .d{background:var(--card);min-height:96px;padding:6px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cal .d.out{background:var(--soft);opacity:.55}
+.cal .d .n{font-size:12px;font-weight:600;color:var(--mute)}
+.cal .d.today .n{background:var(--brand);color:var(--brand-ink);border-radius:99px;width:22px;height:22px;display:grid;place-items:center}
+.ev-chip{font-size:11px;line-height:1.25;padding:3px 6px;border-radius:6px;background:var(--s-soft);color:var(--s);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;border:none;text-align:left;width:100%}
+.ev-chip.big{background:var(--brand);color:var(--brand-ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin-top:10px}
+
+/* equipe */
+.team{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 14px 14px;box-shadow:var(--shadow)}
+.team table{width:100%;border-collapse:collapse}
+.team th{font-size:12px;color:var(--mute);text-align:left;font-weight:600;padding:10px 6px 6px}
+.team td{padding:4px 6px}
+.team input,.team select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.hint{font-size:13px;color:var(--mute);margin:8px 0 0}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(15,10,13,.45);display:none;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:50;overflow-y:auto}
+.ov.on{display:flex}
+.modal{background:var(--card);border-radius:16px;width:100%;max-width:480px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 4px;font-size:18px}
+.modal .sub{color:var(--mute);font-size:13px;margin-bottom:16px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fld label{font-size:13px;font-weight:600}
+.fld input,.fld textarea,.fld select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);width:100%}
+.fld textarea{min-height:80px;resize:vertical}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.opt b{display:block;font-size:14px}
+.opt span{font-size:12px;color:var(--mute)}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}
+.preview{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+.preview div{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.preview .late{color:var(--late);font-weight:600}
+.err{color:var(--late);font-size:13px;margin:-6px 0 10px;display:none}
+.msg{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+.walist{display:flex;flex-direction:column;gap:8px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.loading{color:var(--mute);padding:30px;text-align:center}
+
+@media (max-width:760px){
+  .track{grid-template-columns:1fr;padding:10px 14px 14px}
+  .step{flex-direction:row;flex-wrap:wrap;text-align:left;align-items:flex-start;padding:10px 0 10px 46px;gap:2px 8px;min-height:48px}
+  .step::before{top:-50%;bottom:50%;left:15px;right:auto;width:3px;height:auto}
+  .step .dot{position:absolute;left:0;top:8px}
+  .step .nm{margin:0;width:100%}
+  .step .ar,.step .dt{width:100%}
+  .step .btns{flex-direction:row;align-items:flex-start;flex-wrap:wrap}
+  .cal .d{min-height:64px;padding:3px}
+  .ev-chip{font-size:10px;padding:2px 4px}
+  .cal-head h3{min-width:0;font-size:15px}
+  .who select{min-width:0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand">
+      <div class="logo">IMB</div>
+      <div><h1>Prazos de Campanha</h1><small>Instituto Master Beauty</small></div>
+    </div>
+    <label class="who">Você é
+      <select id="who"></select>
+    </label>
+    <button class="btn primary" id="btnNew">+ Novo curso</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="demo" class="demo" hidden>Modo demonstração: os dados ficam só neste navegador. Ligue a planilha (ENDPOINT no index.html) para a equipe toda ver os mesmos dados.</div>
+
+  <h2 id="todoTitle">Pra fazer agora <span class="count" id="todoCount">0</span></h2>
+  <div id="todo" class="todo"><div class="loading">Carregando…</div></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="timeline">Linha do tempo</button>
+    <button class="tab" data-tab="calendar">Calendário</button>
+    <button class="tab" data-tab="team">Equipe</button>
+  </div>
+
+  <section id="tab-timeline">
+    <div class="toolbar">
+      <span class="sp"></span>
+      <label class="chk"><input type="checkbox" id="showArch"> Mostrar arquivados</label>
+      <button class="btn ghost sm" id="btnRefresh" title="Atualizar">↻ Atualizar</button>
+    </div>
+    <div id="courses"></div>
+  </section>
+
+  <section id="tab-calendar" hidden>
+    <div class="toolbar">
+      <div class="cal-head">
+        <button class="btn sm" id="calPrev">‹</button>
+        <h3 id="calTitle"></h3>
+        <button class="btn sm" id="calNext">›</button>
+        <button class="btn ghost sm" id="calToday">Hoje</button>
+      </div>
+    </div>
+    <div id="cal" class="cal"></div>
+    <div class="legend">
+      <span class="pill s-ok">Feito</span><span class="pill s-open">No prazo</span>
+      <span class="pill s-warn">Vence em até 2 dias</span><span class="pill s-late">Atrasado</span>
+      <span class="pill s-lock">Aguardando etapa anterior</span>
+    </div>
+  </section>
+
+  <section id="tab-team" hidden>
+    <div class="team">
+      <table>
+        <thead><tr><th>Nome</th><th style="width:150px">Área</th><th style="width:190px">WhatsApp (com DDD)</th><th style="width:40px"></th></tr></thead>
+        <tbody id="teamBody"></tbody>
+      </table>
+      <div class="toolbar" style="margin-bottom:0">
+        <button class="btn sm" id="teamAdd">+ Adicionar pessoa</button>
+        <span class="sp"></span>
+        <button class="btn primary sm" id="teamSave">Salvar equipe</button>
+      </div>
+      <p class="hint">Área define quem é avisado em cada etapa: <b>Marketing</b> (entrega e alterações), <b>Revisão</b> (Leo) e <b>Tráfego</b> (subir campanha).</p>
+    </div>
+  </section>
+</div>
+
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== CONFIG ===== */
+// URL /exec do Apps Script. Vazio = modo demonstração (dados só neste navegador).
+const ENDPOINT = '';
+
+// Etapas fixas. ini/fim = dias ANTES do evento (janela da etapa). O prazo é o "fim".
+const ETAPAS = [
+  { nome:'Entrega do material',  area:'Marketing', ini:45, fim:40, link:'obrig', linkLabel:'Link dos materiais (Drive, Canva…)' },
+  { nome:'Revisão do Leo',       area:'Revisão',   ini:38, fim:37, review:true },
+  { nome:'Envio das alterações', area:'Marketing', ini:36, fim:35, link:'obrig', linkLabel:'Link dos materiais corrigidos' },
+  { nome:'Campanha no ar',       area:'Tráfego',   ini:34, fim:30, link:'opc',  linkLabel:'Link da campanha (opcional)' },
+];
+const DONE = ['feito','aprovado','alteracoes','pulado'];
+
+/* ===== utilidades ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAY = 864e5;
+function parseD(s){ const [y,m,d] = String(s).slice(0,10).split('-').map(Number); return new Date(y, m-1, d); }
+function today(){ const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+function addD(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function diff(a, b){ return Math.round((a - b) / DAY); }
+function fd(d){ return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}); }
+function fdw(d){ return d.toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'2-digit'}).replace('.', ''); }
+function fts(s){ if(!s) return ''; const d = new Date(s); return isNaN(d) ? s : d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function safeUrl(u){ u = String(u||'').trim(); if(!u) return ''; if(!/^https?:\/\//i.test(u)) u = 'https://' + u; return u; }
+function phone(p){ let d = String(p||'').replace(/\D/g,''); if(d && d.length <= 11) d = '55' + d; return d; }
+function plural(n, s, p){ return n === 1 ? s : p; }
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(()=>el.classList.remove('on'), 2600); }
+function store(k, v){ try{ if(v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+
+/* ===== API (JSONP no Apps Script; localStorage no modo demo) ===== */
+function api(params){
+  if(!ENDPOINT) return mockApi(params);
+  return new Promise((res, rej) => {
+    const cb = '__cb' + Date.now() + Math.floor(Math.random()*1e6);
+    const s = document.createElement('script');
+    const done = () => { delete window[cb]; s.remove(); clearTimeout(t); };
+    const t = setTimeout(() => { done(); rej(new Error('Sem resposta da planilha')); }, 25000);
+    window[cb] = d => { done(); d.ok ? res(d.data) : rej(new Error(d.error)); };
+    s.onerror = () => { done(); rej(new Error('Falha de conexão')); };
+    s.src = ENDPOINT + '?' + new URLSearchParams({...params, callback: cb, _: Date.now()});
+    document.body.appendChild(s);
+  });
+}
+
+function mockApi(p){
+  const KEY = 'prazos-imb-demo';
+  let db; try{ db = JSON.parse(store(KEY) || 'null'); }catch(e){}
+  if(!db){
+    db = { equipe: [], cursos: [ { id:'demo1', nome:'Curso exemplo (apagar)', data:'2026-11-30', criado:new Date().toISOString(), arquivado:false,
+      etapas: ETAPAS.map(()=>({status:'',por:'',em:'',link:'',obs:''})) } ] };
+  }
+  const E = () => ({status:'',por:'',em:'',link:'',obs:''});
+  const find = id => { const c = db.cursos.find(x => x.id === id); if(!c) throw new Error('Curso não encontrado'); return c; };
+  try{
+    const a = p.action || 'list';
+    if(a === 'addCurso') db.cursos.push({ id: Math.random().toString(36).slice(2,10), nome:p.nome, data:p.data, criado:new Date().toISOString(), arquivado:false, etapas: ETAPAS.map(E) });
+    else if(a === 'editCurso'){ const c = find(p.id); c.nome = p.nome || c.nome; c.data = p.data || c.data; }
+    else if(a === 'archive'){ find(p.id).arquivado = p.val !== '0'; }
+    else if(a === 'check'){
+      const c = find(p.id), k = +p.etapa, now = new Date().toISOString();
+      for(let j=0;j<k;j++) if(!c.etapas[j].status) throw new Error('A etapa anterior ainda não foi concluída');
+      c.etapas[k] = { status:p.status||'feito', por:p.por||'', em:now, link:p.link||'', obs:p.obs||'' };
+      if(k === 1 && p.status === 'aprovado') c.etapas[2] = { status:'pulado', por:p.por||'', em:now, link:'', obs:'Sem alterações' };
+      if(k === 1 && p.status === 'alteracoes' && c.etapas[2].status === 'pulado') c.etapas[2] = E();
+    }
+    else if(a === 'uncheck'){ const c = find(p.id); for(let m=+p.etapa;m<ETAPAS.length;m++) c.etapas[m] = E(); }
+    else if(a === 'saveEquipe'){ db.equipe = JSON.parse(p.json || '[]'); }
+    store(KEY, JSON.stringify(db));
+    return Promise.resolve(JSON.parse(JSON.stringify(db)));
+  }catch(e){ return Promise.reject(e); }
+}
+
+/* ===== regras de prazo ===== */
+function stageInfo(c, k){
+  const ev = parseD(c.data), et = ETAPAS[k], st = c.etapas[k] || {};
+  const abre = addD(ev, -et.ini), prazo = addD(ev, -et.fim), t = today();
+  const dleft = diff(prazo, t);
+  const prevDone = c.etapas.slice(0, k).every(e => DONE.includes(e.status));
+  let cls, label;
+  if(st.status === 'pulado'){ cls='s-skip'; label='Sem alterações'; }
+  else if(DONE.includes(st.status)){
+    cls = 's-ok';
+    label = st.status === 'aprovado' ? 'Aprovado' : st.status === 'alteracoes' ? 'Pediu alterações' : 'Feito';
+  }
+  else if(dleft < 0){ cls='s-late'; label = 'Atrasado ' + (-dleft) + plural(-dleft,' dia',' dias'); }
+  else if(!prevDone){ cls='s-lock'; label='Aguardando etapa anterior'; }
+  else if(dleft <= 2){ cls='s-warn'; label = dleft === 0 ? 'Vence hoje' : dleft === 1 ? 'Vence amanhã' : 'Vence em 2 dias'; }
+  else if(t < abre){ cls='s-open'; label='Liberado (pode adiantar)'; }
+  else { cls='s-open'; label='No prazo · faltam ' + dleft + ' dias'; }
+  return { et, st, abre, prazo, dleft, prevDone, done: DONE.includes(st.status), cls, label };
+}
+function currentStage(c){ const i = c.etapas.findIndex(e => !DONE.includes(e.status)); return i; }
+function nextOpenAfter(c, k){ for(let i=k+1;i<ETAPAS.length;i++) if(!DONE.includes(c.etapas[i].status)) return i; return -1; }
+
+/* ===== estado ===== */
+let DATA = { cursos: [], equipe: [] };
+let ME = store('prazos-imb-me') || '';
+let calMonth = (() => { const t = today(); return new Date(t.getFullYear(), t.getMonth(), 1); })();
+let teamDraft = null;
+let busy = false;
+
+async function load(params){
+  try{
+    DATA = await api(params || {action:'list'});
+    render();
+    return true;
+  }catch(e){
+    toast('Erro: ' + e.message);
+    if(!DATA.cursos.length) $('#todo').innerHTML = '<div class="empty">Não consegui carregar: ' + esc(e.message) + '</div>';
+    return false;
+  }
+}
+
+function areaOf(name){ const p = DATA.equipe.find(x => x.nome === name); return p ? p.area : ''; }
+function peopleOf(area){ return DATA.equipe.filter(p => p.area === area); }
+
+/* ===== render ===== */
+function render(){
+  renderWho();
+  renderTodo();
+  renderCourses();
+  renderCal();
+  if(!teamDraft) renderTeam();
+}
+
+function renderWho(){
+  const sel = $('#who');
+  const names = DATA.equipe.map(p => p.nome);
+  if(ME && !names.includes(ME)) names.push(ME);
+  sel.innerHTML = '<option value="">— escolha —</option>' +
+    names.map(n => `<option ${n===ME?'selected':''}>${esc(n)}</option>`).join('') +
+    '<option value="__new">+ Outro nome…</option>';
+}
+
+function activeCourses(){ return DATA.cursos.filter(c => !c.arquivado).sort((a,b) => a.data.localeCompare(b.data)); }
+
+function renderTodo(){
+  const myArea = areaOf(ME);
+  const items = [];
+  activeCourses().forEach(c => {
+    const k = currentStage(c);
+    if(k < 0) return;
+    const s = stageInfo(c, k);
+    if(myArea && s.et.area !== myArea) return;
+    items.push({ c, k, s });
+  });
+  items.sort((a,b) => a.s.prazo - b.s.prazo);
+  $('#todoTitle').firstChild.textContent = (myArea ? 'Suas tarefas (' + myArea + ') ' : 'Pra fazer agora ');
+  $('#todoCount').textContent = items.length;
+  const color = { 's-late':'var(--late)', 's-warn':'var(--warn)', 's-open':'var(--open)', 's-lock':'var(--lock)' };
+  $('#todo').innerHTML = items.length ? items.map(({c,k,s}) => `
+    <div class="todo-item" style="--c:${color[s.cls] || 'var(--open)'}">
+      <div class="t">${esc(s.et.nome)}</div>
+      <div class="m">${esc(c.nome)} · ${esc(s.et.area)} · prazo <b>${fdw(s.prazo)}</b></div>
+      <div class="row"><span class="pill ${s.cls}">${esc(s.label)}</span></div>
+      <div class="row">
+        <button class="btn primary sm" data-act="check" data-id="${esc(c.id)}" data-k="${k}">✓ Dar check</button>
+        ${s.cls==='s-late'||s.cls==='s-warn' ? `<button class="btn sm" data-act="cobrar" data-id="${esc(c.id)}" data-k="${k}">Cobrar no WhatsApp</button>` : ''}
+      </div>
+    </div>`).join('')
+    : `<div class="empty">${myArea ? 'Nada pendente pra ' + esc(myArea) + ' agora. 🎉' : 'Nenhuma tarefa pendente. Crie um curso em “+ Novo curso”.'}</div>`;
+}
+
+function renderCourses(){
+  const showArch = $('#showArch').checked;
+  const list = DATA.cursos.filter(c => showArch || !c.arquivado).sort((a,b) => a.data.localeCompare(b.data));
+  if(!list.length){ $('#courses').innerHTML = '<div class="empty">Nenhum curso cadastrado ainda.</div>'; return; }
+  $('#courses').innerHTML = list.map(courseHTML).join('');
+}
+
+function courseHTML(c){
+  const ev = parseD(c.data), t = today();
+  const dEv = diff(ev, t);
+  const nDone = c.etapas.filter(e => DONE.includes(e.status)).length;
+  const k = currentStage(c);
+  const live = c.etapas[3] && DONE.includes(c.etapas[3].status);
+  let sub = `Evento <b>${fdw(ev)}</b> · ` + (dEv > 0 ? `faltam ${dEv} ${plural(dEv,'dia','dias')}` : dEv === 0 ? 'é hoje' : 'já aconteceu');
+  if(live){ const days = diff(ev, parseD(iso(new Date(c.etapas[3].em)))); sub += ` · campanha rodando ${days} ${plural(days,'dia','dias')} antes do evento`; }
+  const steps = ETAPAS.map((et, i) => {
+    const s = stageInfo(c, i);
+    const cur = i === k;
+    const st = s.st;
+    let info = '';
+    if(s.done){
+      info = st.status === 'pulado' ? 'Revisão aprovada sem alterações' : `${esc(st.por || '—')} · ${fts(st.em)}`;
+      if(st.link) info += `<br><a href="${esc(safeUrl(st.link))}" target="_blank" rel="noopener">Abrir link ↗</a>`;
+      if(st.obs && st.status !== 'pulado') info += `<span class="obs">“${esc(st.obs)}”</span>`;
+    }
+    let btns = '';
+    if(!c.arquivado){
+      if(cur && s.prevDone) btns += `<button class="btn primary sm" data-act="check" data-id="${esc(c.id)}" data-k="${i}">✓ Dar check</button>`;
+      if(cur && (s.cls==='s-late'||s.cls==='s-warn')) btns += `<button class="btn sm" data-act="cobrar" data-id="${esc(c.id)}" data-k="${i}">Cobrar</button>`;
+      if(s.done && st.status !== 'pulado') btns += `<button class="btn ghost sm" data-act="undo" data-id="${esc(c.id)}" data-k="${i}">Desfazer</button>`;
+    }
+    return `<div class="step ${s.done?'done':''} ${cur?'cur':''} ${s.cls}">
+      <div class="dot">${s.done ? '✓' : i+1}</div>
+      <div class="nm">${esc(et.nome)}</div>
+      <div class="ar">${esc(et.area)}</div>
+      <div class="dt">${fd(s.abre)} → <b>até ${fd(s.prazo)}</b></div>
+      <div><span class="pill ${s.cls}">${esc(s.label)}</span></div>
+      ${info ? `<div class="info">${info}</div>` : ''}
+      ${btns ? `<div class="btns">${btns}</div>` : ''}
+    </div>`;
+  }).join('');
+  const evStep = `<div class="step ${live?'done':''}">
+      <div class="dot ev">★</div>
+      <div class="nm">Curso</div>
+      <div class="ar">Evento</div>
+      <div class="dt"><b>${fdw(ev)}</b></div>
+    </div>`;
+  return `<article class="course" id="c-${esc(c.id)}">
+    <div class="c-head">
+      <div class="c-title">
+        <h3>${esc(c.nome)}${c.arquivado ? ' <span class="pill s-lock">Arquivado</span>' : ''}</h3>
+        <div class="m">${sub}</div>
+        <div class="bar" title="${nDone} de ${ETAPAS.length} etapas"><i style="width:${nDone/ETAPAS.length*100}%"></i></div>
+      </div>
+      <div class="acts">
+        <button class="btn ghost sm" data-act="edit" data-id="${esc(c.id)}">Editar</button>
+      </div>
+    </div>
+    <div class="track">${steps}${evStep}</div>
+  </article>`;
+}
+
+function renderCal(){
+  const m0 = calMonth, y = m0.getFullYear(), m = m0.getMonth();
+  const mt = m0.toLocaleDateString('pt-BR', {month:'long'});
+  $('#calTitle').textContent = mt[0].toUpperCase() + mt.slice(1) + ' ' + y;
+  const start = addD(m0, -((m0.getDay() + 6) % 7)); // segunda-feira
+  const evByDay = {};
+  const push = (d, html) => { const k = iso(d); (evByDay[k] = evByDay[k] || []).push(html); };
+  activeCourses().forEach(c => {
+    ETAPAS.forEach((et, i) => {
+      const s = stageInfo(c, i);
+      if(s.st.status === 'pulado') return;
+      push(s.prazo, `<button class="ev-chip ${s.cls}" data-act="goto" data-id="${esc(c.id)}" title="${esc(c.nome)} — ${esc(et.nome)} (${esc(s.label)})">${esc(et.nome)} · ${esc(c.nome)}</button>`);
+    });
+    push(parseD(c.data), `<button class="ev-chip big" data-act="goto" data-id="${esc(c.id)}" title="${esc(c.nome)}">★ ${esc(c.nome)}</button>`);
+  });
+  const t = iso(today());
+  let html = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(d => `<div class="dw">${d}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const d = addD(start, i);
+    if(i >= 35 && d.getMonth() !== m) break;
+    const k = iso(d);
+    html += `<div class="d ${d.getMonth()!==m?'out':''} ${k===t?'today':''}"><span class="n">${d.getDate()}</span>${(evByDay[k]||[]).join('')}</div>`;
+  }
+  $('#cal').innerHTML = html;
+}
+
+function renderTeam(){
+  const list = teamDraft || DATA.equipe;
+  const areas = ['Marketing','Revisão','Tráfego'];
+  $('#teamBody').innerHTML = (list.length ? list : [{nome:'',area:'Marketing',whats:''}]).map((p,i) => `
+    <tr data-i="${i}">
+      <td><input data-f="nome" value="${esc(p.nome)}" placeholder="Nome"></td>
+      <td><select data-f="area">${areas.map(a => `<option ${a===p.area?'selected':''}>${a}</option>`).join('')}</select></td>
+      <td><input data-f="whats" value="${esc(p.whats)}" placeholder="11 99999-9999" inputmode="tel"></td>
+      <td><button class="btn ghost sm" data-act="teamDel" data-i="${i}" title="Remover">✕</button></td>
+    </tr>`).join('');
+}
+function readTeamForm(){
+  return [...document.querySelectorAll('#teamBody tr')].map(tr => ({
+    nome: tr.querySelector('[data-f=nome]').value.trim(),
+    area: tr.querySelector('[data-f=area]').value,
+    whats: tr.querySelector('[data-f=whats]').value.trim(),
+  }));
+}
+
+/* ===== modais ===== */
+function openModal(html){ $('#modal').innerHTML = html; $('#ov').classList.add('on'); const f = $('#modal').querySelector('input,textarea'); if(f) setTimeout(()=>f.focus(), 30); }
+function closeModal(){ $('#ov').classList.remove('on'); }
+$('#ov').addEventListener('mousedown', e => { if(e.target.id === 'ov') closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+function deadlinePreview(dataStr){
+  if(!dataStr) return '';
+  const ev = parseD(dataStr), t = today();
+  const rows = ETAPAS.map(et => {
+    const p = addD(ev, -et.fim), late = p < t;
+    return `<div><span>${esc(et.nome)} <small style="color:var(--mute)">(${esc(et.area)})</small></span><span class="${late?'late':''}">${fd(addD(ev,-et.ini))} → ${fdw(p)}${late?' ⚠':''}</span></div>`;
+  }).join('');
+  const lateAny = addD(ev, -ETAPAS[0].fim) < t;
+  return rows + `<div><span><b>Curso</b></span><b>${fdw(ev)}</b></div>` +
+    (lateAny ? `<div class="late" style="display:block;margin-top:6px">⚠ Algum prazo já passou. O curso entra com etapa atrasada — dá pra cadastrar mesmo assim.</div>` : '');
+}
+
+function courseModal(c){
+  openModal(`
+    <h3>${c ? 'Editar curso' : 'Novo curso'}</h3>
+    <div class="sub">Os prazos de cada etapa são calculados a partir da data do curso.</div>
+    <div class="fld"><label>Nome do curso</label><input id="fNome" value="${esc(c ? c.nome : '')}" placeholder="Ex.: Curso de Toxina — Turma Nov"></div>
+    <div class="fld"><label>Data do curso</label><input id="fData" type="date" value="${esc(c ? c.data : '')}"></div>
+    <div class="preview" id="fPrev">${deadlinePreview(c ? c.data : '')}</div>
+    <div class="err" id="fErr"></div>
+    <div class="mact">
+      ${c ? `<button class="btn ghost" data-act="archive" data-id="${esc(c.id)}" data-val="${c.arquivado?'0':'1'}" style="margin-right:auto">${c.arquivado?'Desarquivar':'Arquivar'}</button>` : ''}
+      <button class="btn" data-act="close">Cancelar</button>
+      <button class="btn primary" id="fSave">${c ? 'Salvar' : 'Criar curso'}</button>
+    </div>`);
+  const prev = () => { $('#fPrev').innerHTML = deadlinePreview($('#fData').value); $('#fPrev').hidden = !$('#fData').value; };
+  prev();
+  $('#fData').addEventListener('input', prev);
+  $('#fSave').onclick = async () => {
+    const nome = $('#fNome').value.trim(), data = $('#fData').value;
+    if(!nome || !data){ const e = $('#fErr'); e.textContent = 'Preencha nome e data.'; e.style.display = 'block'; return; }
+    if(!(await ensureMe())) return;
+    await run(c ? {action:'editCurso', id:c.id, nome, data, por:ME} : {action:'addCurso', nome, data, por:ME}, c ? 'Curso atualizado' : 'Curso criado');
+  };
+}
+
+function checkModal(c, k){
+  const et = ETAPAS[k], s = stageInfo(c, k);
+  let body = '';
+  if(et.review){
+    body = `
+      <div class="fld"><label>Resultado da revisão</label>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="rv" value="aprovado" checked><div><b>Aprovado, pode subir</b><span>Pula a etapa de alterações e libera o tráfego.</span></div></label>
+          <label class="opt"><input type="radio" name="rv" value="alteracoes"><div><b>Precisa de alterações</b><span>Volta pro Marketing corrigir até ${fdw(stageInfo(c,2).prazo)}.</span></div></label>
+        </div>
+      </div>
+      <div class="fld"><label id="obsLbl">Comentário (opcional)</label><textarea id="fObs" placeholder="O que precisa mudar? Seja específico."></textarea></div>
+      <div class="fld"><label>Link com anotações (opcional)</label><input id="fLink" placeholder="https://…"></div>`;
+  } else {
+    body = (et.link ? `<div class="fld"><label>${esc(et.linkLabel)}${et.link==='obrig'?' *':''}</label><input id="fLink" placeholder="https://drive.google.com/…" value="${esc(k===2 ? (c.etapas[0].link||'') : '')}"></div>` : '') +
+      `<div class="fld"><label>Observação (opcional)</label><textarea id="fObs" placeholder="${k===3 ? 'Ex.: 3 conjuntos, R$ 80/dia' : 'Ex.: falta só o vídeo 3, chega amanhã'}"></textarea></div>`;
+  }
+  openModal(`
+    <h3>✓ ${esc(et.nome)}</h3>
+    <div class="sub">${esc(c.nome)} · prazo ${fdw(s.prazo)} · <span class="pill ${s.cls}">${esc(s.label)}</span></div>
+    ${body}
+    <div class="err" id="fErr"></div>
+    <div class="mact">
+      <button class="btn" data-act="close">Cancelar</button>
+      <button class="btn primary" id="fSave">Confirmar check</button>
+    </div>`);
+  if(et.review){
+    document.querySelectorAll('input[name=rv]').forEach(r => r.onchange = () => {
+      $('#obsLbl').textContent = r.value === 'alteracoes' && r.checked ? 'O que precisa mudar? *' : 'Comentário (opcional)';
+    });
+  }
+  $('#fSave').onclick = async () => {
+    const link = $('#fLink') ? $('#fLink').value.trim() : '';
+    const obs = $('#fObs') ? $('#fObs').value.trim() : '';
+    const status = et.review ? document.querySelector('input[name=rv]:checked').value : 'feito';
+    const err = m => { const e = $('#fErr'); e.textContent = m; e.style.display = 'block'; };
+    if(et.link === 'obrig' && !link) return err('Coloque o link dos materiais pra equipe conseguir ver.');
+    if(status === 'alteracoes' && !obs) return err('Escreva o que precisa ser alterado.');
+    if(!(await ensureMe())) return;
+    const ok = await run({action:'check', id:c.id, etapa:k, status, link, obs, por:ME}, 'Check registrado ✓', true);
+    if(ok){
+      const c2 = DATA.cursos.find(x => x.id === c.id);
+      notifyModal(c2, k);
+    }
+  };
+}
+
+/* mensagem de WhatsApp pro próximo responsável */
+function notifyModal(c, k){
+  const st = c.etapas[k], url = location.href.split('#')[0];
+  const nxt = nextOpenAfter(c, k);
+  let txt, area;
+  if(nxt < 0){
+    txt = `🚀 *${c.nome}*: campanha no ar (${ME}).\n${st.link ? 'Link: ' + st.link + '\n' : ''}${st.obs ? st.obs + '\n' : ''}Curso em ${fdw(parseD(c.data))}.\n\nPrazos: ${url}`;
+    area = null;
+  } else {
+    const n = stageInfo(c, nxt);
+    const head = k === 1
+      ? (st.status === 'aprovado' ? `✅ *${c.nome}*: revisão APROVADA sem alterações (${ME}).` : `✏️ *${c.nome}*: revisão pediu alterações (${ME}):\n"${st.obs}"`)
+      : `✅ *${c.nome}*: ${ETAPAS[k].nome.toLowerCase()} concluída por ${ME}.`;
+    txt = `${head}\n${st.link && k !== 1 ? 'Materiais: ' + st.link + '\n' : st.link ? 'Anotações: ' + st.link + '\n' : ''}\n👉 Próxima etapa: *${n.et.nome}* (${n.et.area}). Prazo: *${fdw(n.prazo)}*.\n\nPrazos: ${url}`;
+    area = n.et.area;
+  }
+  waModal('Avisar ' + (area ? 'quem faz a próxima etapa' : 'a equipe'), txt, area);
+}
+
+function cobrarModal(c, k){
+  const s = stageInfo(c, k), url = location.href.split('#')[0];
+  const quando = s.dleft < 0 ? `venceu ${fdw(s.prazo)} (${-s.dleft} ${plural(-s.dleft,'dia','dias')} de atraso)` : s.dleft === 0 ? 'vence HOJE' : `vence ${fdw(s.prazo)}`;
+  const txt = `⏰ *${c.nome}*: a etapa *${s.et.nome}* ${quando}.\nO curso é ${fdw(parseD(c.data))} e a campanha precisa de tempo rodando. Consegue dar o check hoje?\n\nPrazos: ${url}`;
+  waModal('Cobrar no WhatsApp', txt, s.et.area);
+}
+
+function waModal(title, txt, area){
+  const ppl = area ? peopleOf(area) : DATA.equipe.filter(p => p.nome !== ME);
+  const btns = ppl.filter(p => phone(p.whats)).map(p =>
+    `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${phone(p.whats)}?text=${encodeURIComponent(txt)}">Enviar para ${esc(p.nome)}${area ? '' : ' (' + esc(p.area) + ')'}</a>`).join('');
+  openModal(`
+    <h3>${esc(title)}</h3>
+    <div class="sub">${area ? 'Responsável: ' + esc(area) + '. ' : ''}Clique para abrir o WhatsApp com a mensagem pronta.</div>
+    <div class="msg">${esc(txt)}</div>
+    <div class="walist">
+      ${btns || `<div class="hint" style="margin:0 0 4px">${area ? 'Ninguém de ' + esc(area) + ' com WhatsApp na aba Equipe.' : 'Cadastre os WhatsApps na aba Equipe.'}</div>`}
+      <a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(txt)}">Escolher contato ou grupo no WhatsApp</a>
+    </div>
+    <div class="mact" style="margin-top:14px"><button class="btn" data-act="close">Fechar</button></div>`);
+}
+
+async function ensureMe(){
+  if(ME) return true;
+  const n = prompt('Qual é o seu nome? (fica registrado em quem deu o check)');
+  if(!n || !n.trim()) return false;
+  ME = n.trim(); store('prazos-imb-me', ME); renderWho(); renderTodo();
+  return true;
+}
+
+async function run(params, okMsg, keepModal){
+  if(busy) return false;
+  busy = true;
+  const btn = $('#fSave'); if(btn){ btn.disabled = true; btn.textContent = 'Salvando…'; }
+  const ok = await load(params);
+  busy = false;
+  if(ok){ toast(okMsg); if(!keepModal) closeModal(); }
+  else if(btn){ btn.disabled = false; btn.textContent = 'Tentar de novo'; }
+  return ok;
+}
+
+/* ===== eventos ===== */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const act = b.dataset.act, c = DATA.cursos.find(x => x.id === b.dataset.id), k = +b.dataset.k;
+  if(act === 'close') closeModal();
+  else if(act === 'check') checkModal(c, k);
+  else if(act === 'cobrar') cobrarModal(c, k);
+  else if(act === 'edit') courseModal(c);
+  else if(act === 'archive'){ if(await ensureMe()) run({action:'archive', id:c.id, val:b.dataset.val, por:ME}, b.dataset.val==='1' ? 'Curso arquivado' : 'Curso reativado'); }
+  else if(act === 'undo'){
+    const extra = ETAPAS.slice(k+1).some((_,j) => DONE.includes(c.etapas[k+1+j].status)) ? ' As etapas seguintes também serão desfeitas.' : '';
+    if(confirm(`Desfazer "${ETAPAS[k].nome}" de ${c.nome}?${extra}`) && await ensureMe()) run({action:'uncheck', id:c.id, etapa:k, por:ME}, 'Check desfeito');
+  }
+  else if(act === 'goto'){ switchTab('timeline'); const el = document.getElementById('c-' + b.dataset.id); if(el){ el.scrollIntoView({behavior:'smooth', block:'center'}); el.animate([{outline:'3px solid var(--brand)'},{outline:'3px solid transparent'}], {duration:1600}); } }
+  else if(act === 'teamDel'){ const l = readTeamForm(); l.splice(+b.dataset.i, 1); teamDraft = l; renderTeam(); }
+});
+
+$('#btnNew').onclick = () => courseModal(null);
+$('#btnRefresh').onclick = () => load().then(ok => ok && toast('Atualizado'));
+$('#showArch').onchange = renderCourses;
+$('#who').onchange = e => {
+  let v = e.target.value;
+  if(v === '__new'){ v = (prompt('Seu nome:') || '').trim(); }
+  ME = v; store('prazos-imb-me', ME); render();
+};
+$('#calPrev').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); renderCal(); };
+$('#calNext').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); renderCal(); };
+$('#calToday').onclick = () => { const t = today(); calMonth = new Date(t.getFullYear(), t.getMonth(), 1); renderCal(); };
+$('#teamAdd').onclick = () => { teamDraft = readTeamForm(); teamDraft.push({nome:'', area:'Marketing', whats:''}); renderTeam(); const ins = document.querySelectorAll('#teamBody [data-f=nome]'); ins[ins.length-1].focus(); };
+$('#teamBody').addEventListener('input', () => { teamDraft = readTeamForm(); });
+$('#teamSave').onclick = async () => {
+  const list = readTeamForm().filter(p => p.nome);
+  const names = list.map(p => p.nome.toLowerCase());
+  if(new Set(names).size !== names.length) return toast('Tem nome repetido na equipe.');
+  const btn = $('#teamSave'); btn.disabled = true;
+  const ok = await load({action:'saveEquipe', json: JSON.stringify(list), por: ME});
+  btn.disabled = false;
+  if(ok){ teamDraft = null; renderTeam(); toast('Equipe salva'); }
+};
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+  ['timeline','calendar','team'].forEach(n => $('#tab-' + n).hidden = n !== name);
+  store('prazos-imb-tab', name);
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
+
+/* ===== início ===== */
+$('#demo').hidden = !!ENDPOINT;
+switchTab(store('prazos-imb-tab') || 'timeline');
+load();
+setInterval(() => { if(document.visibilityState === 'visible' && !$('#ov').classList.contains('on') && !teamDraft) load(); }, 60000);
+</script>
+</body>
+</html>
