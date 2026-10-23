@@ -268,7 +268,7 @@ h2 .count{background:var(--soft);color:var(--mute);border-radius:99px;padding:1p
         <span class="sp"></span>
         <button class="btn primary sm" id="teamSave">Salvar equipe</button>
       </div>
-      <p class="hint">Área define quem é avisado em cada etapa: <b>Marketing</b> (entrega e alterações), <b>Revisão</b> (Leo) e <b>Tráfego</b> (subir campanha).</p>
+      <p class="hint">Área define quem é avisado em cada etapa: <b>Coordenação</b> (cadastra os cursos), <b>Marketing</b> (entrega e alterações), <b>Aprovação</b> (aprova ou reprova as artes) e <b>Tráfego</b> (sobe a campanha).</p>
     </div>
   </section>
 </div>
@@ -284,11 +284,14 @@ const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyA3YQiyoTLTmoHbdGwqrk
 // Etapas fixas. ini/fim = dias ANTES do evento (janela da etapa). O prazo é o "fim".
 const ETAPAS = [
   { nome:'Entrega do material',  area:'Marketing', ini:45, fim:40, link:'obrig', linkLabel:'Link dos materiais (Drive, Canva…)' },
-  { nome:'Revisão do Leo',       area:'Revisão',   ini:38, fim:37, review:true },
+  { nome:'Aprovação das artes',  area:'Aprovação', ini:38, fim:37, review:true },
   { nome:'Envio das alterações', area:'Marketing', ini:36, fim:35, link:'obrig', linkLabel:'Link dos materiais corrigidos' },
   { nome:'Campanha no ar',       area:'Tráfego',   ini:34, fim:30, link:'opc',  linkLabel:'Link da campanha (opcional)' },
 ];
 const DONE = ['feito','aprovado','alteracoes','pulado'];
+const AREAS = ['Coordenação','Marketing','Aprovação','Tráfego'];
+// Quem é quem (usado enquanto a aba Equipe ainda não carregou).
+const PADRAO = { 'Coordenação':'Leonardo', 'Marketing':'Charbelle', 'Aprovação':'Larissa', 'Tráfego':'Leandro' };
 
 /* ===== utilidades ===== */
 const $ = s => document.querySelector(s);
@@ -394,6 +397,7 @@ async function load(params){
 
 function areaOf(name){ const p = DATA.equipe.find(x => x.nome === name); return p ? p.area : ''; }
 function peopleOf(area){ return DATA.equipe.filter(p => p.area === area); }
+function namesOf(area){ const n = peopleOf(area).map(p => p.nome); return n.length ? n.join(', ') : (PADRAO[area] || area); }
 
 /* ===== render ===== */
 function render(){
@@ -422,11 +426,12 @@ function renderTodo(){
     const k = currentStage(c);
     if(k < 0) return;
     const s = stageInfo(c, k);
-    if(myArea && s.et.area !== myArea) return;
+    if(myArea && myArea !== 'Coordenação' && s.et.area !== myArea) return;
     items.push({ c, k, s });
   });
   items.sort((a,b) => a.s.prazo - b.s.prazo);
-  $('#todoTitle').firstChild.textContent = (myArea ? 'Suas tarefas (' + myArea + ') ' : 'Pra fazer agora ');
+  const own = myArea && myArea !== 'Coordenação';
+  $('#todoTitle').firstChild.textContent = (own ? 'Suas tarefas (' + myArea + ') ' : 'Pra fazer agora ');
   $('#todoCount').textContent = items.length;
   const color = { 's-late':'var(--late)', 's-warn':'var(--warn)', 's-open':'var(--open)', 's-lock':'var(--lock)' };
   $('#todo').innerHTML = items.length ? items.map(({c,k,s}) => `
@@ -439,7 +444,7 @@ function renderTodo(){
         ${s.cls==='s-late'||s.cls==='s-warn' ? `<button class="btn sm" data-act="cobrar" data-id="${esc(c.id)}" data-k="${k}">Cobrar no WhatsApp</button>` : ''}
       </div>
     </div>`).join('')
-    : `<div class="empty">${myArea ? 'Nada pendente pra ' + esc(myArea) + ' agora. 🎉' : 'Nenhuma tarefa pendente. Crie um curso em “+ Novo curso”.'}</div>`;
+    : `<div class="empty">${own ? 'Nada pendente pra ' + esc(myArea) + ' agora. 🎉' : 'Nenhuma tarefa pendente. Crie um curso em “+ Novo curso”.'}</div>`;
 }
 
 function renderCourses(){
@@ -463,7 +468,7 @@ function courseHTML(c){
     const st = s.st;
     let info = '';
     if(s.done){
-      info = st.status === 'pulado' ? 'Revisão aprovada sem alterações' : `${esc(st.por || '—')} · ${fts(st.em)}`;
+      info = st.status === 'pulado' ? 'Artes aprovadas sem alterações' : `${esc(st.por || '—')} · ${fts(st.em)}`;
       if(st.link) info += `<br><a href="${esc(safeUrl(st.link))}" target="_blank" rel="noopener">Abrir link ↗</a>`;
       if(st.obs && st.status !== 'pulado') info += `<span class="obs">“${esc(st.obs)}”</span>`;
     }
@@ -476,7 +481,7 @@ function courseHTML(c){
     return `<div class="step ${s.done?'done':''} ${cur?'cur':''} ${s.cls}">
       <div class="dot">${s.done ? '✓' : i+1}</div>
       <div class="nm">${esc(et.nome)}</div>
-      <div class="ar">${esc(et.area)}</div>
+      <div class="ar">${esc(et.area)} · ${esc(namesOf(et.area))}</div>
       <div class="dt">${fd(s.abre)} → <b>até ${fd(s.prazo)}</b></div>
       <div><span class="pill ${s.cls}">${esc(s.label)}</span></div>
       ${info ? `<div class="info">${info}</div>` : ''}
@@ -532,7 +537,7 @@ function renderCal(){
 
 function renderTeam(){
   const list = teamDraft || DATA.equipe;
-  const areas = ['Marketing','Revisão','Tráfego'];
+  const areas = AREAS;
   $('#teamBody').innerHTML = (list.length ? list : [{nome:'',area:'Marketing',whats:''}]).map((p,i) => `
     <tr data-i="${i}">
       <td><input data-f="nome" value="${esc(p.nome)}" placeholder="Nome"></td>
@@ -587,7 +592,8 @@ function courseModal(c){
     const nome = $('#fNome').value.trim(), data = $('#fData').value;
     if(!nome || !data){ const e = $('#fErr'); e.textContent = 'Preencha nome e data.'; e.style.display = 'block'; return; }
     if(!(await ensureMe())) return;
-    await run(c ? {action:'editCurso', id:c.id, nome, data, por:ME} : {action:'addCurso', nome, data, por:ME}, c ? 'Curso atualizado' : 'Curso criado');
+    const ok = await run(c ? {action:'editCurso', id:c.id, nome, data, por:ME} : {action:'addCurso', nome, data, por:ME}, c ? 'Curso atualizado' : 'Curso criado');
+    if(ok && !c) novoCursoModal(nome, data);
   };
 }
 
@@ -649,12 +655,19 @@ function notifyModal(c, k){
   } else {
     const n = stageInfo(c, nxt);
     const head = k === 1
-      ? (st.status === 'aprovado' ? `✅ *${c.nome}*: revisão APROVADA sem alterações (${ME}).` : `✏️ *${c.nome}*: revisão pediu alterações (${ME}):\n"${st.obs}"`)
+      ? (st.status === 'aprovado' ? `✅ *${c.nome}*: artes APROVADAS sem alterações (${ME}).` : `✏️ *${c.nome}*: artes reprovadas, precisa de alterações (${ME}):\n"${st.obs}"`)
       : `✅ *${c.nome}*: ${ETAPAS[k].nome.toLowerCase()} concluída por ${ME}.`;
     txt = `${head}\n${st.link && k !== 1 ? 'Materiais: ' + st.link + '\n' : st.link ? 'Anotações: ' + st.link + '\n' : ''}\n👉 Próxima etapa: *${n.et.nome}* (${n.et.area}). Prazo: *${fdw(n.prazo)}*.\n\nPrazos: ${url}`;
     area = n.et.area;
   }
   waModal('Avisar ' + (area ? 'quem faz a próxima etapa' : 'a equipe'), txt, area);
+}
+
+function novoCursoModal(nome, data){
+  const ev = parseD(data), url = location.href.split('#')[0];
+  const lst = ETAPAS.map(et => `• ${et.nome} (${namesOf(et.area)}): até ${fdw(addD(ev,-et.fim))}`).join('\n');
+  const txt = `📅 *Novo curso: ${nome}*, dia ${fdw(ev)}.\n\n${lst}\n\n👉 Primeira etapa: *${ETAPAS[0].nome}*. Prazo: *${fdw(addD(ev,-ETAPAS[0].fim))}*.\n\nPrazos: ${url}`;
+  waModal('Avisar o Marketing', txt, ETAPAS[0].area);
 }
 
 function cobrarModal(c, k){
@@ -749,28 +762,30 @@ document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dat
 function onboardSlides(){
   // Exemplo com a regra real: curso em 30/11.
   const ev = new Date(2026, 10, 30);
-  const tl = ETAPAS.map((et, i) => `<div class="ob-row s-open"><div class="ob-c">${i+1}</div>
-      <div class="grow"><b>${esc(et.nome)}</b><small>${esc(et.area)}</small></div>
+  const N = a => esc(namesOf(a)), rv = ETAPAS[1];
+  const tl = `<div class="ob-row"><div class="ob-c ev">📅</div><div class="grow"><b>Cadastra o curso e a data</b><small>${N('Coordenação')}</small></div></div>` +
+    ETAPAS.map((et, i) => `<div class="ob-row s-open"><div class="ob-c">${i+1}</div>
+      <div class="grow"><b>${esc(et.nome)}</b><small>${N(et.area)}</small></div>
       <div style="text-align:right"><b>até ${fd(addD(ev,-et.fim))}</b><small>${et.ini} a ${et.fim} dias antes</small></div></div>`).join('') +
     `<div class="ob-row"><div class="ob-c ev">★</div><div class="grow"><b>Curso</b></div><b>${fd(ev)}</b></div>`;
   return [
     { k:'Como funciona', t:'Prazos sem correria',
-      p:'Você coloca a <b>data do curso</b>. O sistema calcula de trás pra frente até quando cada área tem que entregar, e cada um <b>dá check</b> pra liberar a próxima etapa.',
+      p:`O <b>${N('Coordenação')}</b> cadastra o curso e a <b>data</b>. O sistema calcula de trás pra frente até quando cada área tem que entregar, e cada um <b>dá check</b> pra liberar a próxima etapa.`,
       v:`<div class="ob-vis">${tl}</div><p class="hint" style="margin-top:6px">Exemplo: curso em 30/11.</p>` },
     { k:'Passo 1', t:'Escolha o seu nome',
       p:'No topo da tela, em <b>“Você é”</b>, escolha o seu nome. Fica salvo nesse aparelho, e o sistema mostra <b>só as tarefas da sua área</b>.',
-      v:`<div class="ob-vis"><div class="ob-mock" style="text-align:center">Você é <span class="ob-sel">Leo ▾</span></div>
+      v:`<div class="ob-vis"><div class="ob-mock" style="text-align:center">Você é <span class="ob-sel">${N(rv.area)} ▾</span></div>
         <div class="ob-arrow">↓</div>
-        <div class="ob-mock"><b>Suas tarefas (Revisão)</b><div class="ob-row s-warn"><div class="ob-c">2</div><div class="grow">Revisão do Leo<small>Curso Toxina · prazo sáb, 24/10</small></div><span class="pill s-warn">Vence amanhã</span></div></div></div>` },
+        <div class="ob-mock"><b>Suas tarefas (${esc(rv.area)})</b><div class="ob-row s-warn"><div class="ob-c">2</div><div class="grow">${esc(rv.nome)}<small>Curso Toxina · prazo sáb, 24/10</small></div><span class="pill s-warn">Vence amanhã</span></div></div></div>` },
     { k:'Passo 2', t:'Terminou? Dá o check',
-      p:'Clique em <b>✓ Dar check</b> na sua etapa. O Marketing <b>cola o link dos materiais</b> (Drive, Canva…), que fica clicável pra todo mundo ver. A próxima etapa só libera depois do check.',
+      p:`Clique em <b>✓ Dar check</b> na sua etapa. O Marketing (${N('Marketing')}) <b>cola o link dos materiais</b> (Drive, Canva…), que fica clicável pra todo mundo ver. A próxima etapa só libera depois do check.`,
       v:`<div class="ob-vis"><div class="ob-mock">
           <div style="font-weight:700;margin-bottom:8px">✓ Entrega do material</div>
           <div style="font-size:12px;font-weight:600;margin-bottom:4px">Link dos materiais *</div>
           <div class="ob-sel" style="width:100%;font-weight:400;color:var(--mute)">https://drive.google.com/…</div>
           <div style="text-align:right;margin-top:10px"><span class="btn primary sm">Confirmar check</span></div></div></div>` },
-    { k:'Passo 3', t:'A revisão do Leo',
-      p:'O Leo abre o link e escolhe uma das duas opções:',
+    { k:'Passo 3', t:'Aprovação das artes',
+      p:`A ${N(rv.area)} abre o link e aprova ou reprova as artes:`,
       v:`<div class="ob-vis"><div class="opts">
           <div class="opt"><div><b>✅ Aprovado, pode subir</b><span>Pula a etapa de alterações e vai direto pro Tráfego.</span></div></div>
           <div class="opt"><div><b>✏️ Precisa de alterações</b><span>Escreve o que mudar e volta pro Marketing corrigir (até 35 dias antes).</span></div></div>
@@ -785,17 +800,17 @@ function onboardSlides(){
           <div class="ob-row"><span class="pill s-lock">Aguardando</span><span class="grow">Esperando a etapa anterior</span></div></div>` },
     { k:'Passo 5', t:'Avise no WhatsApp',
       p:'Depois do check, aparece a <b>mensagem pronta</b> pro próximo responsável. É só clicar e enviar. Se alguém atrasar, use o botão <b>Cobrar no WhatsApp</b>.',
-      v:`<div class="ob-vis"><div class="msg" style="background:var(--card);margin-bottom:10px">✅ *Curso Toxina*: entrega do material concluída por Ana.
+      v:`<div class="ob-vis"><div class="msg" style="background:var(--card);margin-bottom:10px">✅ *Curso Toxina*: entrega do material concluída por ${N('Marketing')}.
 Materiais: drive.google.com/…
 
-👉 Próxima etapa: *Revisão do Leo*. Prazo: *sáb, 24/10*.</div>
-        <span class="btn wa" style="width:100%;justify-content:center">Enviar para Leo</span></div>` },
+👉 Próxima etapa: *${esc(rv.nome)}*. Prazo: *sáb, 24/10*.</div>
+        <span class="btn wa" style="width:100%;justify-content:center">Enviar para ${N(rv.area)}</span></div>` },
     { k:'Tudo pronto', t:'Pra começar',
-      p:'Três coisas e o sistema está rodando:',
+      p:'Três coisas e está tudo rodando:',
       v:`<div class="ob-vis"><ul class="ob-check">
-          <li><span>1</span><div>Cadastre a equipe na aba <b>Equipe</b> (nome, área e WhatsApp)</div></li>
-          <li><span>2</span><div>Clique em <b>+ Novo curso</b> e coloque a data</div></li>
-          <li><span>3</span><div>Mande o link pra equipe e peça pra cada um escolher o nome</div></li>
+          <li><span>1</span><div>Escolha o seu nome em <b>“Você é”</b>, no topo</div></li>
+          <li><span>2</span><div>${N('Coordenação')} cadastra os cursos em <b>+ Novo curso</b></div></li>
+          <li><span>3</span><div>Confira se o seu WhatsApp está certo na aba <b>Equipe</b></div></li>
         </ul></div><p class="hint">Pra ver este tutorial de novo: botão <b>? Como funciona</b> no topo.</p>`,
       last:true },
   ];
@@ -815,7 +830,7 @@ function onboard(i){
       ${s.last ? '' : '<button class="btn ghost" data-act="close" style="margin-right:auto">Pular</button>'}
       ${i > 0 ? `<button class="btn" data-act="ob" data-k="${i-1}">Voltar</button>` : ''}
       ${s.last
-        ? `<button class="btn" data-act="obTeam">Cadastrar equipe</button><button class="btn primary" data-act="close">Começar</button>`
+        ? `<button class="btn" data-act="obTeam">Ver equipe</button><button class="btn primary" data-act="close">Começar</button>`
         : `<button class="btn primary" data-act="ob" data-k="${i+1}">Próximo</button>`}
     </div>`);
 }
