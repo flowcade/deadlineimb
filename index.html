@@ -386,6 +386,7 @@ async function load(params){
   try{
     DATA = await api(params || {action:'list'});
     render();
+    if(DATA.agendaErro) toast('Google Agenda: ' + DATA.agendaErro);
     return true;
   }catch(e){
     toast('Erro: ' + e.message);
