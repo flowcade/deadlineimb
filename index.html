@@ -215,7 +215,6 @@ h2 .count{background:var(--soft);color:var(--mute);border-radius:99px;padding:1p
       <select id="who"></select>
     </label>
     <button class="btn ghost sm" id="btnHelp">? Como funciona</button>
-    <button class="btn primary" id="btnNew">+ Novo curso</button>
   </div>
 </header>
 
@@ -444,13 +443,13 @@ function renderTodo(){
         ${s.cls==='s-late'||s.cls==='s-warn' ? `<button class="btn sm" data-act="cobrar" data-id="${esc(c.id)}" data-k="${k}">Cobrar no WhatsApp</button>` : ''}
       </div>
     </div>`).join('')
-    : `<div class="empty">${own ? 'Nada pendente pra ' + esc(myArea) + ' agora. 🎉' : 'Nenhuma tarefa pendente. Crie um curso em “+ Novo curso”.'}</div>`;
+    : `<div class="empty">${own ? 'Nada pendente pra ' + esc(myArea) + ' agora. 🎉' : 'Nenhuma tarefa pendente. Os cursos entram sozinhos quando são cadastrados no Google Agenda do IMB.'}</div>`;
 }
 
 function renderCourses(){
   const showArch = $('#showArch').checked;
   const list = DATA.cursos.filter(c => showArch || !c.arquivado).sort((a,b) => a.data.localeCompare(b.data));
-  if(!list.length){ $('#courses').innerHTML = '<div class="empty">Nenhum curso cadastrado ainda.</div>'; return; }
+  if(!list.length){ $('#courses').innerHTML = '<div class="empty">Nenhum curso ainda. Cadastre o evento no Google Agenda do IMB com o título começando por <b>Curso</b>, <b>Workshop</b>, <b>Imersão</b>, <b>Masterclass</b>, <b>Pós-graduação</b> ou <b>Residência</b>. Ele aparece aqui em até 1 minuto.</div>'; return; }
   $('#courses').innerHTML = list.map(courseHTML).join('');
 }
 
@@ -460,7 +459,7 @@ function courseHTML(c){
   const nDone = c.etapas.filter(e => DONE.includes(e.status)).length;
   const k = currentStage(c);
   const live = c.etapas[3] && DONE.includes(c.etapas[3].status);
-  let sub = `Evento <b>${fdw(ev)}</b> · ` + (dEv > 0 ? `faltam ${dEv} ${plural(dEv,'dia','dias')}` : dEv === 0 ? 'é hoje' : 'já aconteceu');
+  let sub = (c.agenda ? '📅 ' : '') + `Evento <b>${fdw(ev)}</b> · ` + (dEv > 0 ? `faltam ${dEv} ${plural(dEv,'dia','dias')}` : dEv === 0 ? 'é hoje' : 'já aconteceu');
   if(live){ const days = diff(ev, parseD(iso(new Date(c.etapas[3].em)))); sub += ` · campanha rodando ${days} ${plural(days,'dia','dias')} antes do evento`; }
   const steps = ETAPAS.map((et, i) => {
     const s = stageInfo(c, i);
@@ -502,7 +501,7 @@ function courseHTML(c){
         <div class="bar" title="${nDone} de ${ETAPAS.length} etapas"><i style="width:${nDone/ETAPAS.length*100}%"></i></div>
       </div>
       <div class="acts">
-        <button class="btn ghost sm" data-act="edit" data-id="${esc(c.id)}">Editar</button>
+        <button class="btn ghost sm" data-act="edit" data-id="${esc(c.id)}">${c.agenda ? 'Detalhes' : 'Editar'}</button>
       </div>
     </div>
     <div class="track">${steps}${evStep}</div>
@@ -573,6 +572,18 @@ function deadlinePreview(dataStr){
 }
 
 function courseModal(c){
+  if(c && c.agenda){
+    openModal(`
+      <h3>${esc(c.nome)}</h3>
+      <div class="sub">📅 Vem do Google Agenda. Pra mudar nome ou data, edite o evento lá: o sistema atualiza sozinho.</div>
+      <div class="preview">${deadlinePreview(c.data)}</div>
+      <div class="mact">
+        <button class="btn ghost" data-act="archive" data-id="${esc(c.id)}" data-val="${c.arquivado?'0':'1'}" style="margin-right:auto">${c.arquivado?'Desarquivar':'Arquivar'}</button>
+        <button class="btn" data-act="close">Fechar</button>
+        <button class="btn wa" data-act="avisarNovo" data-id="${esc(c.id)}">Avisar Marketing</button>
+      </div>`);
+    return;
+  }
   openModal(`
     <h3>${c ? 'Editar curso' : 'Novo curso'}</h3>
     <div class="sub">Os prazos de cada etapa são calculados a partir da data do curso.</div>
@@ -719,6 +730,7 @@ document.addEventListener('click', async e => {
   else if(act === 'check') checkModal(c, k);
   else if(act === 'cobrar') cobrarModal(c, k);
   else if(act === 'edit') courseModal(c);
+  else if(act === 'avisarNovo') novoCursoModal(c.nome, c.data);
   else if(act === 'archive'){ if(await ensureMe()) run({action:'archive', id:c.id, val:b.dataset.val, por:ME}, b.dataset.val==='1' ? 'Curso arquivado' : 'Curso reativado'); }
   else if(act === 'undo'){
     const extra = ETAPAS.slice(k+1).some((_,j) => DONE.includes(c.etapas[k+1+j].status)) ? ' As etapas seguintes também serão desfeitas.' : '';
@@ -728,7 +740,6 @@ document.addEventListener('click', async e => {
   else if(act === 'teamDel'){ const l = readTeamForm(); l.splice(+b.dataset.i, 1); teamDraft = l; renderTeam(); }
 });
 
-$('#btnNew').onclick = () => courseModal(null);
 $('#btnRefresh').onclick = () => load().then(ok => ok && toast('Atualizado'));
 $('#showArch').onchange = renderCourses;
 $('#who').onchange = e => {
@@ -763,14 +774,14 @@ function onboardSlides(){
   // Exemplo com a regra real: curso em 30/11.
   const ev = new Date(2026, 10, 30);
   const N = a => esc(namesOf(a)), rv = ETAPAS[1];
-  const tl = `<div class="ob-row"><div class="ob-c ev">📅</div><div class="grow"><b>Cadastra o curso e a data</b><small>${N('Coordenação')}</small></div></div>` +
+  const tl = `<div class="ob-row"><div class="ob-c ev">📅</div><div class="grow"><b>Cadastra o curso no Google Agenda</b><small>${N('Coordenação')}</small></div></div>` +
     ETAPAS.map((et, i) => `<div class="ob-row s-open"><div class="ob-c">${i+1}</div>
       <div class="grow"><b>${esc(et.nome)}</b><small>${N(et.area)}</small></div>
       <div style="text-align:right"><b>até ${fd(addD(ev,-et.fim))}</b><small>${et.ini} a ${et.fim} dias antes</small></div></div>`).join('') +
     `<div class="ob-row"><div class="ob-c ev">★</div><div class="grow"><b>Curso</b></div><b>${fd(ev)}</b></div>`;
   return [
     { k:'Como funciona', t:'Prazos sem correria',
-      p:`O <b>${N('Coordenação')}</b> cadastra o curso e a <b>data</b>. O sistema calcula de trás pra frente até quando cada área tem que entregar, e cada um <b>dá check</b> pra liberar a próxima etapa.`,
+      p:`O <b>${N('Coordenação')}</b> cadastra o curso no <b>Google Agenda</b> e ele aparece aqui sozinho. O sistema calcula de trás pra frente até quando cada área tem que entregar, e cada um <b>dá check</b> pra liberar a próxima etapa.`,
       v:`<div class="ob-vis">${tl}</div><p class="hint" style="margin-top:6px">Exemplo: curso em 30/11.</p>` },
     { k:'Passo 1', t:'Escolha o seu nome',
       p:'No topo da tela, em <b>“Você é”</b>, escolha o seu nome. Fica salvo nesse aparelho, e o sistema mostra <b>só as tarefas da sua área</b>.',
@@ -809,7 +820,7 @@ Materiais: drive.google.com/…
       p:'Três coisas e está tudo rodando:',
       v:`<div class="ob-vis"><ul class="ob-check">
           <li><span>1</span><div>Escolha o seu nome em <b>“Você é”</b>, no topo</div></li>
-          <li><span>2</span><div>${N('Coordenação')} cadastra os cursos em <b>+ Novo curso</b></div></li>
+          <li><span>2</span><div>${N('Coordenação')} cadastra os cursos no <b>Google Agenda</b> (título começando com “Curso”, “Workshop”…)</div></li>
           <li><span>3</span><div>Confira se o seu WhatsApp está certo na aba <b>Equipe</b></div></li>
         </ul></div><p class="hint">Pra ver este tutorial de novo: botão <b>? Como funciona</b> no topo.</p>`,
       last:true },
